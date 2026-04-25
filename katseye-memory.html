@@ -212,6 +212,10 @@
     color: white;
     text-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
   }
+  .face-back::before {
+    content: var(--card-symbol, "♡");
+    font-size: 2.6rem;
+  }
   .face-back::after {
     content: "✦";
     position: absolute;
@@ -219,6 +223,64 @@
     opacity: 0.7;
     top: 8px; right: 12px;
   }
+
+  /* theme picker */
+  .theme-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px 10px;
+    margin: 10px 0 4px;
+  }
+  .theme-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+  .theme-swatch {
+    width: 100%;
+    aspect-ratio: 3 / 4;
+    border-radius: 14px;
+    cursor: pointer;
+    border: 3px solid transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.7rem;
+    color: white;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.25);
+    transition: transform 0.2s ease;
+  }
+  .theme-swatch:hover { transform: translateY(-2px) scale(1.05); }
+  .theme-cell.active .theme-swatch {
+    border-color: #d6589f;
+    box-shadow: 0 0 0 2px white, 0 0 12px rgba(214, 88, 159, 0.5);
+  }
+  .theme-cell .theme-name {
+    font-size: 0.72rem;
+    color: #5b3a6b;
+    font-weight: 600;
+    white-space: nowrap;
+    text-align: center;
+    text-shadow: none;
+    flex: none;
+  }
+
+  /* dropdown selects in settings */
+  .pretty-select {
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 600;
+    font-size: 0.9rem;
+    background: #fff5fa;
+    border: 2px solid #ffd1e6;
+    border-radius: 999px;
+    padding: 6px 14px;
+    color: #5b3a6b;
+    cursor: pointer;
+    outline: none;
+    min-width: 130px;
+  }
+  .pretty-select:focus { border-color: #d6589f; }
   .face-front {
     transform: rotateY(180deg);
     background: var(--member-bg, #fff);
@@ -559,7 +621,7 @@
 
   <div class="board" id="board"></div>
 
-  <footer>made with ♡ for my favorite EYE-kon</footer>
+  <footer>Created by ZeynepC</footer>
 
   <div class="overlay" id="settingsOverlay">
     <div class="modal">
@@ -571,9 +633,21 @@
         <div class="toggle on" id="bgToggle"></div>
       </div>
       <div class="settings-row">
+        <span class="label">🎼 Music Style</span>
+        <select class="pretty-select" id="bgStyleSelect"></select>
+      </div>
+      <div class="settings-row">
         <span class="label">🔔 Game Sounds</span>
         <input type="range" class="vol" id="sfxVol" min="0" max="100" value="60" />
         <div class="toggle on" id="sfxToggle"></div>
+      </div>
+      <div class="settings-row">
+        <span class="label">✨ Match Sound</span>
+        <select class="pretty-select" id="sfxStyleSelect"></select>
+      </div>
+      <div class="settings-row" style="display:block">
+        <span class="label" style="display:block; margin-bottom:8px;">🎴 Card Theme</span>
+        <div class="theme-grid" id="themeGrid"></div>
       </div>
       <div class="actions">
         <button class="btn" id="closeSettings">Done ♡</button>
@@ -581,7 +655,7 @@
     </div>
   </div>
 
-  <div class="overlay show" id="startOverlay">
+  <div class="overlay" id="startOverlay">
     <div class="modal">
       <div class="stars">🌸✨🌸</div>
       <h2>KATSEYE Memory</h2>
@@ -621,12 +695,12 @@
 
 <script>
   const members = [
-    { name: 'Yoonchae',  img: 'images/yoonchae.png',  bg: 'linear-gradient(135deg,#fff4ec,#ffd9c2)', ink: '#8a4a2c', tag: 'soft glow' },
-    { name: 'Sophia',    img: 'images/sophia.png',    bg: 'linear-gradient(135deg,#ffe2b8,#ffae6b)', ink: '#9a4a14', tag: 'sun-kissed' },
-    { name: 'Megan',     img: 'images/megan.png',     bg: 'linear-gradient(135deg,#ffd1d6,#e58a9c)', ink: '#7a2436', tag: 'burgundy bloom' },
-    { name: 'Lara',      img: 'images/lara.png',      bg: 'linear-gradient(135deg,#f0ffae,#c8ee5a)', ink: '#4f6a14', tag: 'electric lime' },
+    { name: 'Yoonchae',  img: 'images/yoonchae.png',  bg: 'linear-gradient(135deg,#fff4ec,#ffd9c2)', ink: '#8a4a2c', tag: 'pink letters tee' },
+    { name: 'Sophia',    img: 'images/sophia.png',    bg: 'linear-gradient(135deg,#ffe2b8,#ffae6b)', ink: '#9a4a14', tag: 'palm trees' },
+    { name: 'Megan',     img: 'images/megan.png',     bg: 'linear-gradient(135deg,#ffd1d6,#e58a9c)', ink: '#7a2436', tag: 'bold red lip' },
+    { name: 'Lara',      img: 'images/lara.png',      bg: 'linear-gradient(135deg,#f0ffae,#c8ee5a)', ink: '#4f6a14', tag: 'red hair' },
     { name: 'Daniela',   img: 'images/daniela.png',   bg: 'linear-gradient(135deg,#ffc7ec,#ff5fb5)', ink: '#7a1d5c', tag: 'pink moon' },
-    { name: 'Manon',     img: 'images/manon.png',     bg: 'linear-gradient(135deg,#fff7c4,#ffe066)', ink: '#8a6a14', tag: 'butter ruffle' },
+    { name: 'Manon',     img: 'images/manon.png',     bg: 'linear-gradient(135deg,#fff7c4,#ffe066)', ink: '#8a6a14', tag: 'yellow ruffles' },
     { name: 'Mia',       img: 'images/mia.png',       bg: 'linear-gradient(135deg,#e8d6ff,#b693ff)', ink: '#52268a', tag: 'lilac dream' },
     { name: 'Gabriela',  img: 'images/gabriela.png',  bg: 'linear-gradient(135deg,#ffe1f0,#ffa6cf)', ink: '#9a2868', tag: 'rose petal' },
     { name: 'KATSEYE',   img: 'images/katseye.png',   bg: 'linear-gradient(135deg,#ffb6d9,#c5a3ff,#a3d8ff)', ink: '#5b3a6b', tag: 'the group' },
@@ -636,7 +710,7 @@
     { name: 'Gnarly',    img: 'images/gnarly.png',    bg: 'linear-gradient(135deg,#d6ffe8,#5fe8a8)', ink: '#1d6b48', tag: 'gnarly' },
     { name: 'Gameboy',   img: 'images/gameboy.png',   bg: 'linear-gradient(135deg,#c8f1ff,#7ad6ff)', ink: '#1c5a8c', tag: 'gameboy' },
     { name: 'Internet',  img: 'images/internet.png',  bg: 'linear-gradient(135deg,#d4d8ff,#8a96ff)', ink: '#2a3680', tag: 'internet' },
-    { name: 'Monster',   img: 'images/monster.png',   bg: 'linear-gradient(135deg,#e0c2ff,#9d5fff)', ink: '#4a1c8a', tag: 'monster' },
+    { name: 'Monster',   img: 'images/monster.png',   bg: 'linear-gradient(135deg,#e6ffd0,#a8e87a)', ink: '#3d6b1c', tag: 'monster' },
   ];
 
   const board = document.getElementById('board');
@@ -656,12 +730,88 @@
   const SETTINGS_KEY = 'katseye_settings_v1';
   const NAME_KEY = 'katseye_player_name';
 
+  // ========== STORAGE (localStorage + cookie fallback) ==========
+  function storageGet(key) {
+    try {
+      const v = localStorage.getItem(key);
+      if (v != null) return v;
+    } catch (e) {}
+    const safe = key.replace(/[.$?*|{}()[\]\\\/+^]/g, '\\$&');
+    const m = document.cookie.match(new RegExp('(?:^|; )' + safe + '=([^;]*)'));
+    return m ? decodeURIComponent(m[1]) : null;
+  }
+  function storageSet(key, value) {
+    try { localStorage.setItem(key, value); } catch (e) {}
+    try {
+      document.cookie = key + '=' + encodeURIComponent(value) +
+        ';path=/;max-age=' + (60 * 60 * 24 * 365 * 2) + ';SameSite=Lax';
+    } catch (e) {}
+  }
+  // ===============================================================
+
+  // ============ THEMES ============
+  const THEMES = {
+    bubblegum: {
+      label: 'Bubblegum', symbol: '♡',
+      cardBack: 'linear-gradient(135deg, #ffb6d9, #c5a3ff, #a3d8ff)',
+      bg1: '#ffe0f0', bg2: '#e3d4ff', bg3: '#d4f1ff',
+    },
+    starlight: {
+      label: 'Starlight', symbol: '✦',
+      cardBack: 'linear-gradient(135deg, #fbd79c, #ff9ec7, #c79bff)',
+      bg1: '#fff3d6', bg2: '#ffe0f0', bg3: '#e8d6ff',
+    },
+    butterfly: {
+      label: 'Butterfly', symbol: '🦋',
+      cardBack: 'linear-gradient(135deg, #b6e2ff, #c4a3ff, #ffb6e0)',
+      bg1: '#d8f0ff', bg2: '#e3d4ff', bg3: '#ffe0f0',
+    },
+    matcha: {
+      label: 'Matcha', symbol: '🌿',
+      cardBack: 'linear-gradient(135deg, #c8eea0, #a3e8c4, #b6e2ff)',
+      bg1: '#e8ffd0', bg2: '#d4f5e0', bg3: '#d4ecff',
+    },
+    sunset: {
+      label: 'Sunset', symbol: '☀',
+      cardBack: 'linear-gradient(135deg, #ffd17a, #ff8e9e, #c79bff)',
+      bg1: '#fff0d6', bg2: '#ffd6e0', bg3: '#e8d6ff',
+    },
+    cherry: {
+      label: 'Cherry', symbol: '🌸',
+      cardBack: 'linear-gradient(135deg, #ffb3c8, #ff7799, #ffd1dc)',
+      bg1: '#fff0f5', bg2: '#ffd6e3', bg3: '#fff8fa',
+    },
+    galaxy: {
+      label: 'Galaxy', symbol: '⭐',
+      cardBack: 'linear-gradient(135deg, #6e54ff, #c54fff, #ff6ec7)',
+      bg1: '#dcd4ff', bg2: '#ecd4ff', bg3: '#ffd4ec',
+    },
+    mint: {
+      label: 'Mint', symbol: '◯',
+      cardBack: 'linear-gradient(135deg, #a3f0d4, #7dd6e8, #b8c4ff)',
+      bg1: '#d4fff0', bg2: '#d4f0ff', bg3: '#e0e8ff',
+    },
+  };
+
+  function applyTheme(name) {
+    const t = THEMES[name] || THEMES.bubblegum;
+    const r = document.documentElement.style;
+    r.setProperty('--bg1', t.bg1);
+    r.setProperty('--bg2', t.bg2);
+    r.setProperty('--bg3', t.bg3);
+    r.setProperty('--card-back', t.cardBack);
+    r.setProperty('--card-symbol', `"${t.symbol}"`);
+  }
+  // ================================
+
   // ============ 8-BIT AUDIO ENGINE (procedural, royalty-free) ============
   const settings = Object.assign(
-    { bgOn: true, bgVol: 30, sfxOn: true, sfxVol: 60 },
-    JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}')
+    { bgOn: true, bgVol: 30, sfxOn: true, sfxVol: 60, theme: 'bubblegum',
+      bgStyle: 'bouncy', sfxStyle: 'sparkle' },
+    JSON.parse(storageGet(SETTINGS_KEY) || '{}')
   );
-  function saveSettings() { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); }
+  applyTheme(settings.theme);
+  function saveSettings() { storageSet(SETTINGS_KEY, JSON.stringify(settings)); }
 
   let audioCtx = null;
   let bgGain = null;
@@ -691,22 +841,68 @@
     osc.stop(audioCtx.currentTime + duration);
   }
 
-  // Cute 8-bit chiptune loop (C major-ish, fluffy bouncy)
+  // 8-bit chiptune library
   const NOTES = { C4:261.63, D4:293.66, E4:329.63, F4:349.23, G4:392, A4:440, B4:493.88,
-                  C5:523.25, D5:587.33, E5:659.25, F5:698.46, G5:783.99, A5:880 };
-  const MELODY = [
-    'E5','G5','A5','G5','E5','C5','D5','E5',
-    'G5','A5','C5','E5','D5','C5','D5','E5',
-    'A4','C5','E5','D5','C5','A4','G4','E4',
-    'C5','E5','G5','A5','G5','E5','D5','C5'
-  ];
-  const BASS = ['C4','C4','G4','G4','A4','A4','F4','F4',
-                'C4','C4','G4','G4','F4','F4','G4','G4'];
+                  C5:523.25, D5:587.33, E5:659.25, F5:698.46, G5:783.99, A5:880, B5:987.77, C6:1046.5 };
+
+  const BG_STYLES = {
+    bouncy: {
+      label: 'Bouncy', emoji: '🌸', tempo: 200,
+      melody: ['E5','G5','A5','G5','E5','C5','D5','E5','G5','A5','C5','E5','D5','C5','D5','E5',
+               'A4','C5','E5','D5','C5','A4','G4','E4','C5','E5','G5','A5','G5','E5','D5','C5'],
+      bass:   ['C4','C4','G4','G4','A4','A4','F4','F4','C4','C4','G4','G4','F4','F4','G4','G4',
+               'A4','A4','C4','C4','F4','F4','G4','G4','C4','C4','G4','G4','C4','C4','G4','G4'],
+    },
+    arcade: {
+      label: 'Arcade', emoji: '🕹', tempo: 140,
+      melody: ['C5','C5','G5','C6','G5','E5','C5','E5','D5','D5','A5','D5','C5','D5','E5','D5',
+               'C5','E5','G5','C6','B5','G5','E5','C5','D5','F5','A5','C6','G5','E5','C5','C5'],
+      bass:   ['C4','C4','C4','C4','F4','F4','F4','F4','G4','G4','G4','G4','C4','C4','C4','C4',
+               'C4','C4','C4','C4','G4','G4','G4','G4','F4','F4','F4','F4','C4','C4','G4','C4'],
+    },
+    dreamy: {
+      label: 'Dreamy', emoji: '☁', tempo: 320,
+      melody: ['E5','G5','C6','B5','A5','G5','E5','D5','C5','E5','G5','A5','G5','E5','D5','C5',
+               'D5','F5','A5','G5','F5','E5','D5','C5','E5','G5','C6','B5','G5','E5','D5','C5'],
+      bass:   ['C4','C4','C4','C4','F4','F4','F4','F4','G4','G4','G4','G4','C4','C4','C4','C4',
+               'D4','D4','D4','D4','F4','F4','F4','F4','C4','C4','G4','G4','C4','C4','C4','C4'],
+    },
+    waltz: {
+      label: 'Waltz', emoji: '🌙', tempo: 280,
+      melody: ['C5','E5','G5','A5','G5','E5','D5','F5','A5','C6','A5','F5',
+               'E5','G5','C6','D6','C6','A5','D5','F5','A5','G5','F5','E5'].concat(
+              ['C5','E5','G5','A5','G5','E5','D5','F5','A5','C6','A5','F5',
+               'B4','D5','G5','C6','B5','G5','C5','E5','G5','C6','G5','E5']),
+      bass:   ['C4','G4','E4','F4','C4','A4','G4','D4','B4','C4','F4','C4',
+               'C4','G4','E4','F4','C4','A4','D4','A4','F4','G4','D4','C4',
+               'C4','G4','E4','F4','C4','A4','G4','D4','B4','C4','F4','C4',
+               'G4','D4','B4','C4','G4','E4','C4','G4','E4','C4','G4','C4'],
+    },
+    bop: {
+      label: 'K-pop Bop', emoji: '💖', tempo: 170,
+      melody: ['E5','E5','G5','A5','A5','G5','E5','D5','E5','G5','A5','B5','A5','G5','E5','D5',
+               'C5','E5','G5','C6','B5','A5','G5','E5','D5','F5','A5','G5','F5','E5','D5','C5'],
+      bass:   ['A4','A4','E4','E4','F4','F4','C4','C4','G4','G4','D4','D4','A4','A4','E4','E4',
+               'C4','C4','G4','G4','F4','F4','C4','C4','D4','D4','F4','F4','C4','C4','G4','C4'],
+    },
+    lullaby: {
+      label: 'Lullaby', emoji: '✨', tempo: 380,
+      melody: ['E5','E5','G5','G5','E5','E5','C5','D5','E5','D5','C5','D5',
+               'E5','E5','G5','G5','E5','E5','C5','D5','C5','C5','C5','C5'].concat(
+              ['G5','G5','E5','E5','D5','D5','C5','D5','E5','D5','C5','C5',
+               'A4','C5','E5','G5','E5','D5','C5','C5','C5','C5','C5','C5']),
+      bass:   ['C4','C4','C4','C4','C4','C4','G4','G4','C4','C4','G4','G4',
+               'C4','C4','C4','C4','C4','C4','G4','G4','C4','C4','C4','C4',
+               'F4','F4','C4','C4','G4','G4','C4','C4','C4','C4','C4','C4',
+               'F4','F4','C4','C4','G4','G4','C4','C4','C4','C4','C4','C4'],
+    },
+  };
 
   function bgTick() {
     if (!settings.bgOn || !audioCtx) return;
-    const note = MELODY[bgStep % MELODY.length];
-    const bass = BASS[bgStep % BASS.length];
+    const style = BG_STYLES[settings.bgStyle] || BG_STYLES.bouncy;
+    const note = style.melody[bgStep % style.melody.length];
+    const bass = style.bass[bgStep % style.bass.length];
     playNote(NOTES[note], 0.22, 'square', 0.18, bgGain);
     if (bgStep % 2 === 0) playNote(NOTES[bass] / 2, 0.35, 'triangle', 0.25, bgGain);
     bgStep++;
@@ -718,22 +914,72 @@
     if (audioCtx.state === 'suspended') audioCtx.resume();
     if (bgTimer) clearInterval(bgTimer);
     bgGain.gain.value = settings.bgVol / 100 * 0.15;
-    bgTimer = setInterval(bgTick, 220);
+    bgStep = 0;
+    const style = BG_STYLES[settings.bgStyle] || BG_STYLES.bouncy;
+    bgTimer = setInterval(bgTick, style.tempo);
   }
   function stopBgMusic() {
     if (bgTimer) { clearInterval(bgTimer); bgTimer = null; }
   }
+  function restartBgMusic() {
+    stopBgMusic();
+    if (settings.bgOn) startBgMusic();
+  }
 
-  // SFX
+  // SFX styles
+  const SFX_STYLES = {
+    sparkle: {
+      label: 'Sparkle', emoji: '✨',
+      play: (v) => {
+        ['C5','E5','G5','C5'].forEach((n, i) =>
+          setTimeout(() => playNote(NOTES[n] * 2, 0.12, 'square', v), i * 70));
+      }
+    },
+    coin: {
+      label: 'Coin', emoji: '🪙',
+      play: (v) => {
+        playNote(988, 0.08, 'square', v);
+        setTimeout(() => playNote(1319, 0.18, 'square', v), 80);
+      }
+    },
+    bell: {
+      label: 'Bell', emoji: '🔔',
+      play: (v) => {
+        playNote(1568, 0.4, 'sine', v * 0.9);
+        setTimeout(() => playNote(2093, 0.4, 'sine', v * 0.6), 60);
+      }
+    },
+    pop: {
+      label: 'Pop', emoji: '🫧',
+      play: (v) => {
+        playNote(440, 0.06, 'triangle', v);
+        setTimeout(() => playNote(880, 0.08, 'triangle', v * 0.8), 30);
+      }
+    },
+    wow: {
+      label: 'Wow', emoji: '🌈',
+      play: (v) => {
+        ['C5','D5','E5','G5','A5','C6'].forEach((n, i) =>
+          setTimeout(() => playNote(NOTES[n] * 2, 0.08, 'square', v), i * 35));
+      }
+    },
+    kawaii: {
+      label: 'Kawaii', emoji: '💗',
+      play: (v) => {
+        playNote(1319, 0.1, 'square', v);
+        setTimeout(() => playNote(1760, 0.12, 'square', v), 70);
+        setTimeout(() => playNote(2349, 0.18, 'sine', v * 0.7), 150);
+      }
+    },
+  };
+
   function sfxMatch() {
     if (!settings.sfxOn) return;
     initAudio();
     if (audioCtx.state === 'suspended') audioCtx.resume();
     const v = settings.sfxVol / 100 * 0.3;
-    const seq = ['C5','E5','G5','C5'];
-    seq.forEach((n, i) => {
-      setTimeout(() => playNote(NOTES[n] * 2, 0.12, 'square', v), i * 70);
-    });
+    const style = SFX_STYLES[settings.sfxStyle] || SFX_STYLES.sparkle;
+    style.play(v);
   }
   function sfxFlip() {
     if (!settings.sfxOn) return;
@@ -795,11 +1041,11 @@
   }
 
   function loadScores() {
-    try { return JSON.parse(localStorage.getItem(SCORE_KEY)) || []; }
+    try { return JSON.parse(storageGet(SCORE_KEY)) || []; }
     catch { return []; }
   }
   function saveScores(scores) {
-    localStorage.setItem(SCORE_KEY, JSON.stringify(scores));
+    storageSet(SCORE_KEY, JSON.stringify(scores));
   }
   function recordScore(entry) {
     const scores = loadScores();
@@ -885,7 +1131,7 @@
       card.dataset.name = m.name;
       card.innerHTML = `
         <div class="card-inner">
-          <div class="face face-back">♡</div>
+          <div class="face face-back"></div>
           <div class="face face-front" style="--member-bg:${m.bg};--member-ink:${m.ink}">
             <img class="photo" src="${m.img}" alt="${m.name}"
                  onerror="this.outerHTML='<div class=&quot;photo missing&quot;>add<br>${m.img.split('/').pop()}</div>'">
@@ -995,7 +1241,7 @@
     // show name input, prefill last name
     document.getElementById('nameSection').style.display = '';
     const nameInput = document.getElementById('nameInput');
-    nameInput.value = localStorage.getItem(NAME_KEY) || '';
+    nameInput.value = storageGet(NAME_KEY) || '';
     setTimeout(() => nameInput.focus(), 200);
 
     renderChart(null);
@@ -1009,7 +1255,7 @@
     const nameInput = document.getElementById('nameInput');
     const name = (nameInput.value.trim() || 'anon').slice(0, 14);
     pendingEntry.name = name;
-    localStorage.setItem(NAME_KEY, name);
+    storageSet(NAME_KEY, name);
     const top = recordScore(pendingEntry);
     const rank = top.findIndex(s => s.t === pendingEntry.t) + 1;
     if (rank === 1) {
@@ -1101,6 +1347,7 @@
 
   updateBestPill();
   ambientSparkles();
+  buildBoard();
 
   // ============ Settings panel wiring ============
   const settingsOverlay = document.getElementById('settingsOverlay');
@@ -1152,6 +1399,48 @@
     saveSettings();
   });
   sfxVolEl.addEventListener('change', () => sfxMatch());
+
+  // theme picker
+  const themeGrid = document.getElementById('themeGrid');
+  function renderThemes() {
+    themeGrid.innerHTML = Object.entries(THEMES).map(([key, t]) => `
+      <div class="theme-cell ${settings.theme === key ? 'active' : ''}" data-theme="${key}">
+        <div class="theme-swatch" style="background:${t.cardBack}">${t.symbol}</div>
+        <div class="theme-name">${t.label}</div>
+      </div>
+    `).join('');
+    themeGrid.querySelectorAll('.theme-cell').forEach(el => {
+      el.addEventListener('click', () => {
+        settings.theme = el.dataset.theme;
+        saveSettings();
+        applyTheme(settings.theme);
+        renderThemes();
+      });
+    });
+  }
+  renderThemes();
+
+  // bg music style dropdown
+  const bgStyleSelect = document.getElementById('bgStyleSelect');
+  bgStyleSelect.innerHTML = Object.entries(BG_STYLES).map(([key, s]) =>
+    `<option value="${key}" ${settings.bgStyle === key ? 'selected' : ''}>${s.emoji} ${s.label}</option>`
+  ).join('');
+  bgStyleSelect.addEventListener('change', () => {
+    settings.bgStyle = bgStyleSelect.value;
+    saveSettings();
+    if (settings.bgOn) restartBgMusic();
+  });
+
+  // sfx match style dropdown
+  const sfxStyleSelect = document.getElementById('sfxStyleSelect');
+  sfxStyleSelect.innerHTML = Object.entries(SFX_STYLES).map(([key, s]) =>
+    `<option value="${key}" ${settings.sfxStyle === key ? 'selected' : ''}>${s.emoji} ${s.label}</option>`
+  ).join('');
+  sfxStyleSelect.addEventListener('change', () => {
+    settings.sfxStyle = sfxStyleSelect.value;
+    saveSettings();
+    sfxMatch();
+  });
 </script>
 </body>
 </html>
