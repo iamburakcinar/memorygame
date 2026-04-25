@@ -1,0 +1,1157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>✨ KATSEYE Memory Match ✨</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Caveat:wght@700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg1: #ffe0f0;
+    --bg2: #e3d4ff;
+    --bg3: #d4f1ff;
+    --card-back: linear-gradient(135deg, #ffb6d9, #c5a3ff, #a3d8ff);
+    --ink: #5b3a6b;
+    --shadow: 0 8px 20px rgba(180, 120, 200, 0.25);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: 'Fredoka', system-ui, sans-serif;
+    color: var(--ink);
+    background: linear-gradient(135deg, var(--bg1), var(--bg2), var(--bg3));
+    background-size: 300% 300%;
+    animation: bgshift 18s ease infinite;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    overflow-x: hidden;
+  }
+  @keyframes bgshift {
+    0%   { background-position: 0% 50%; }
+    50%  { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  /* floating sparkles in background */
+  .sparkle {
+    position: fixed;
+    pointer-events: none;
+    font-size: 22px;
+    opacity: 0.7;
+    animation: float 9s linear infinite;
+    z-index: 0;
+  }
+  @keyframes float {
+    0%   { transform: translateY(110vh) rotate(0deg);   opacity: 0;   }
+    10%  { opacity: 0.9; }
+    100% { transform: translateY(-15vh)  rotate(360deg); opacity: 0;   }
+  }
+
+  header {
+    text-align: center;
+    margin: 12px 0 20px;
+    z-index: 1;
+  }
+  h1 {
+    font-family: 'Caveat', cursive;
+    font-size: clamp(2.4rem, 6vw, 3.8rem);
+    color: #d6589f;
+    text-shadow: 2px 3px 0 #fff, 4px 5px 0 rgba(214, 88, 159, 0.25);
+    letter-spacing: 1px;
+  }
+  h1 .star { display: inline-block; animation: spin 4s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .subtitle {
+    font-size: 1rem;
+    color: #8b5fa8;
+    margin-top: 6px;
+  }
+
+  .hud {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 8px 0 18px;
+    z-index: 1;
+  }
+  .pill {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(6px);
+    border: 2px solid rgba(255, 255, 255, 0.9);
+    padding: 8px 18px;
+    border-radius: 999px;
+    font-weight: 600;
+    box-shadow: var(--shadow);
+    font-size: 0.95rem;
+  }
+  .pill b { color: #d6589f; margin-left: 6px; }
+
+  .slider-pill {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(6px);
+    border: 2px solid rgba(255, 255, 255, 0.9);
+    padding: 6px 16px;
+    border-radius: 999px;
+    box-shadow: var(--shadow);
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+  .slider-pill label { color: #5b3a6b; }
+  .slider-pill b { color: #d6589f; min-width: 56px; text-align: right; }
+  .slider-pill input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 140px;
+    height: 6px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #ffb6d9, #c5a3ff);
+    outline: none;
+    cursor: pointer;
+  }
+  .slider-pill input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: white;
+    border: 3px solid #d6589f;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(180, 120, 200, 0.4);
+  }
+  .slider-pill input[type="range"]::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: white;
+    border: 3px solid #d6589f;
+    cursor: pointer;
+  }
+
+  button.btn {
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 600;
+    background: linear-gradient(135deg, #ff9ec7, #c79bff);
+    color: white;
+    border: none;
+    padding: 10px 22px;
+    border-radius: 999px;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+    font-size: 0.95rem;
+    transition: transform 0.15s ease;
+  }
+  button.btn:hover { transform: translateY(-2px) scale(1.03); }
+  button.btn:active { transform: scale(0.97); }
+
+  .board {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 10px;
+    width: min(1100px, 100%);
+    z-index: 1;
+  }
+  @media (max-width: 900px) {
+    .board { grid-template-columns: repeat(6, 1fr); gap: 8px; }
+  }
+  @media (max-width: 600px) {
+    .board { grid-template-columns: repeat(4, 1fr); gap: 7px; }
+  }
+
+  .card {
+    aspect-ratio: 3 / 4;
+    perspective: 1000px;
+    cursor: pointer;
+  }
+  .card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.55s cubic-bezier(.5, .1, .3, 1.4);
+    transform-style: preserve-3d;
+  }
+  .card.flipped .card-inner { transform: rotateY(180deg); }
+  .card.matched .card-inner {
+    transform: rotateY(180deg);
+    animation: pop 0.6s ease;
+  }
+  @keyframes pop {
+    0%   { transform: rotateY(180deg) scale(1); }
+    40%  { transform: rotateY(180deg) scale(1.1); }
+    100% { transform: rotateY(180deg) scale(1); }
+  }
+
+  .face {
+    position: absolute;
+    inset: 0;
+    border-radius: 22px;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    border: 3px solid white;
+  }
+  .face-back {
+    background: var(--card-back);
+    background-size: 200% 200%;
+    animation: bgshift 6s ease infinite;
+    font-size: 2.8rem;
+    color: white;
+    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+  }
+  .face-back::after {
+    content: "✦";
+    position: absolute;
+    font-size: 1rem;
+    opacity: 0.7;
+    top: 8px; right: 12px;
+  }
+  .face-front {
+    transform: rotateY(180deg);
+    background: var(--member-bg, #fff);
+    color: var(--member-ink, #5b3a6b);
+    text-align: center;
+    overflow: hidden;
+    position: relative;
+  }
+  .face-front .photo {
+    width: 78%;
+    aspect-ratio: 1 / 1;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid white;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+    margin-bottom: 8px;
+    background: rgba(255,255,255,0.5);
+  }
+  .face-front .photo.missing {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    color: #b07cc2;
+    text-align: center;
+    padding: 6px;
+    line-height: 1.1;
+  }
+  .face-front .name {
+    font-family: 'Caveat', cursive;
+    font-size: clamp(0.95rem, 1.6vw, 1.5rem);
+    font-weight: 700;
+    line-height: 1;
+  }
+  .face-front .tag {
+    font-size: clamp(0.5rem, 0.7vw, 0.65rem);
+    margin-top: 3px;
+    opacity: 0.7;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .face-front .photo {
+    width: 80%;
+    margin-bottom: 5px;
+  }
+  /* fluffy halo on matched cards */
+  .card.matched .face-front {
+    box-shadow: 0 0 0 4px white, 0 0 24px 6px rgba(255, 200, 230, 0.9), var(--shadow);
+    animation: glowPulse 1.4s ease-in-out infinite;
+  }
+  @keyframes glowPulse {
+    0%, 100% { box-shadow: 0 0 0 4px white, 0 0 18px 4px rgba(255, 200, 230, 0.8), var(--shadow); }
+    50%      { box-shadow: 0 0 0 4px white, 0 0 32px 10px rgba(255, 150, 210, 1), var(--shadow); }
+  }
+
+  /* match burst particles */
+  .burst {
+    position: absolute;
+    pointer-events: none;
+    font-size: 24px;
+    z-index: 5;
+    animation: burst 1s ease-out forwards;
+  }
+  @keyframes burst {
+    0%   { transform: translate(-50%, -50%) scale(0.4) rotate(0deg);   opacity: 1; }
+    100% { transform: translate(var(--bx), var(--by)) scale(1.3) rotate(360deg); opacity: 0; }
+  }
+
+  /* match flash on matches pill */
+  .pill.flash {
+    animation: pillFlash 0.7s ease;
+  }
+  @keyframes pillFlash {
+    0%   { transform: scale(1);   background: rgba(255, 255, 255, 0.7); }
+    35%  { transform: scale(1.18); background: linear-gradient(135deg, #ffb6d9, #c5a3ff); color: white; }
+    100% { transform: scale(1);   background: rgba(255, 255, 255, 0.7); }
+  }
+  .pill.flash b { color: white !important; }
+
+  /* +1 floating popup */
+  .plus-one {
+    position: fixed;
+    font-family: 'Caveat', cursive;
+    font-size: 2rem;
+    font-weight: 700;
+    color: #d6589f;
+    text-shadow: 0 2px 6px rgba(255, 255, 255, 0.9);
+    pointer-events: none;
+    z-index: 20;
+    animation: plusOne 1.2s ease-out forwards;
+  }
+  @keyframes plusOne {
+    0%   { transform: translate(-50%, 0) scale(0.5); opacity: 0; }
+    20%  { transform: translate(-50%, -20px) scale(1.2); opacity: 1; }
+    100% { transform: translate(-50%, -80px) scale(1);   opacity: 0; }
+  }
+
+  /* Win overlay */
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(255, 220, 240, 0.55);
+    backdrop-filter: blur(6px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+  }
+  .overlay.show { display: flex; animation: fade 0.3s ease; }
+  @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+  .modal {
+    background: white;
+    border-radius: 28px;
+    padding: 30px 36px;
+    text-align: center;
+    box-shadow: 0 20px 50px rgba(180, 120, 200, 0.35);
+    max-width: 360px;
+    width: 90%;
+  }
+  .modal h2 {
+    font-family: 'Caveat', cursive;
+    color: #d6589f;
+    font-size: 2.4rem;
+    margin-bottom: 6px;
+  }
+  .modal p { margin: 8px 0 18px; color: #8b5fa8; }
+  .modal .stars { font-size: 2rem; margin: 6px 0; }
+  .modal .score-big {
+    font-family: 'Caveat', cursive;
+    font-size: 3rem;
+    color: #d6589f;
+    line-height: 1;
+    margin: 4px 0 2px;
+  }
+  .modal .score-label { font-size: 0.75rem; letter-spacing: 2px; text-transform: uppercase; color: #b07cc2; }
+  .modal .stat-row { display: flex; justify-content: center; gap: 18px; margin: 14px 0 6px; }
+  .modal .stat-row div { font-size: 0.9rem; color: #8b5fa8; }
+  .modal .stat-row b { display: block; color: #5b3a6b; font-size: 1.3rem; }
+
+  /* Score chart */
+  .chart {
+    margin: 18px 0 8px;
+    text-align: left;
+    background: linear-gradient(135deg, #fff5fa, #f3eaff);
+    border-radius: 16px;
+    padding: 14px 16px;
+  }
+  .chart h3 {
+    font-family: 'Caveat', cursive;
+    color: #d6589f;
+    font-size: 1.5rem;
+    text-align: center;
+    margin-bottom: 8px;
+  }
+  .chart-row {
+    display: grid;
+    grid-template-columns: 22px 1fr auto;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 0;
+    font-size: 0.88rem;
+  }
+  .chart-row + .chart-row { border-top: 1px dashed rgba(180, 120, 200, 0.25); }
+  .chart-row.current { background: rgba(255, 200, 230, 0.45); border-radius: 10px; padding: 6px 8px; margin: 2px -4px; }
+  .chart-row .rank {
+    font-weight: 700;
+    text-align: center;
+    color: #d6589f;
+  }
+  .chart-row .bar-wrap {
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 999px;
+    height: 18px;
+    position: relative;
+    overflow: hidden;
+  }
+  .chart-row .bar {
+    height: 100%;
+    background: linear-gradient(90deg, #ffb6d9, #c5a3ff);
+    border-radius: 999px;
+    transition: width 0.6s ease;
+  }
+  .chart-row .bar-label {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    font-size: 0.72rem;
+    color: #5b3a6b;
+    font-weight: 600;
+  }
+  .chart-row .score-val {
+    font-weight: 700;
+    color: #5b3a6b;
+    min-width: 42px;
+    text-align: right;
+  }
+  .chart-empty { text-align: center; color: #b07cc2; font-size: 0.85rem; padding: 8px; }
+  .modal .actions { display: flex; gap: 10px; justify-content: center; margin-top: 6px; flex-wrap: wrap; }
+  .btn.ghost {
+    background: white;
+    color: #d6589f;
+    border: 2px solid #ffd1e6;
+  }
+
+  /* settings */
+  .settings-btn {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: white;
+    border: 2px solid #ffd1e6;
+    cursor: pointer;
+    font-size: 1.4rem;
+    box-shadow: var(--shadow);
+    z-index: 8;
+    transition: transform 0.3s ease;
+  }
+  .settings-btn:hover { transform: rotate(60deg); }
+
+  .settings-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 0;
+    border-bottom: 1px dashed rgba(180, 120, 200, 0.25);
+    font-size: 0.95rem;
+    color: #5b3a6b;
+  }
+  .settings-row:last-child { border-bottom: none; }
+  .settings-row .label { flex: 1; text-align: left; font-weight: 600; }
+
+  /* toggle switch */
+  .toggle {
+    position: relative;
+    width: 46px;
+    height: 26px;
+    background: #e8d6f0;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background 0.25s ease;
+    flex-shrink: 0;
+  }
+  .toggle::after {
+    content: "";
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background: white;
+    border-radius: 50%;
+    top: 3px;
+    left: 3px;
+    transition: left 0.25s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  }
+  .toggle.on { background: linear-gradient(135deg, #ff9ec7, #c79bff); }
+  .toggle.on::after { left: 23px; }
+
+  .vol {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100px;
+    height: 5px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #ffb6d9, #c5a3ff);
+    outline: none;
+    cursor: pointer;
+  }
+  .vol::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: white;
+    border: 2px solid #d6589f;
+    cursor: pointer;
+  }
+  .vol::-moz-range-thumb {
+    width: 16px; height: 16px; border-radius: 50%;
+    background: white; border: 2px solid #d6589f; cursor: pointer;
+  }
+  .vol:disabled { opacity: 0.3; cursor: not-allowed; }
+
+  .name-input {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    text-align: center;
+    border: 2px solid #ffd1e6;
+    background: #fff5fa;
+    border-radius: 999px;
+    padding: 8px 18px;
+    color: #5b3a6b;
+    outline: none;
+    width: 200px;
+    margin: 8px auto;
+    display: block;
+    transition: border-color 0.2s ease;
+  }
+  .name-input:focus { border-color: #d6589f; }
+  .chart-row .player {
+    font-size: 0.78rem;
+    color: #8b5fa8;
+    font-weight: 600;
+    margin-right: 6px;
+  }
+
+  footer {
+    margin-top: 26px;
+    font-size: 0.85rem;
+    color: #a784c2;
+    text-align: center;
+    z-index: 1;
+  }
+</style>
+</head>
+<body>
+  <button class="settings-btn" id="settingsBtn" title="Settings">⚙️</button>
+
+  <header>
+    <h1><span class="star">✦</span> KATSEYE Memory Match <span class="star">✦</span></h1>
+    <div class="subtitle">find the matching pairs ♡ fluffy &amp; cute mode</div>
+  </header>
+
+  <div class="hud">
+    <div class="pill">Time<b id="time">0:00</b></div>
+    <div class="pill">Moves<b id="moves">0</b></div>
+    <div class="pill">Matches<b id="matches">0/16</b></div>
+    <div class="pill">Best<b id="best">—</b></div>
+    <button class="btn" id="reset">✨ New Game</button>
+    <button class="btn ghost" id="showScores">🏆 Scores</button>
+  </div>
+
+
+  <div class="board" id="board"></div>
+
+  <footer>made with ♡ for my favorite EYE-kon</footer>
+
+  <div class="overlay" id="settingsOverlay">
+    <div class="modal">
+      <div class="stars">⚙️ ✨</div>
+      <h2>Settings</h2>
+      <div class="settings-row">
+        <span class="label">🎵 Background Music</span>
+        <input type="range" class="vol" id="bgVol" min="0" max="100" value="30" />
+        <div class="toggle on" id="bgToggle"></div>
+      </div>
+      <div class="settings-row">
+        <span class="label">🔔 Game Sounds</span>
+        <input type="range" class="vol" id="sfxVol" min="0" max="100" value="60" />
+        <div class="toggle on" id="sfxToggle"></div>
+      </div>
+      <div class="actions">
+        <button class="btn" id="closeSettings">Done ♡</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay show" id="startOverlay">
+    <div class="modal">
+      <div class="stars">🌸✨🌸</div>
+      <h2>KATSEYE Memory</h2>
+      <p>Choose how many cards & start ♡</p>
+      <div class="slider-pill" style="margin: 12px auto; width: fit-content;">
+        <label for="cardCount">🎴</label>
+        <input type="range" id="cardCount" min="6" max="32" step="2" value="16" />
+        <b id="cardCountLabel">16</b>
+      </div>
+      <div class="actions">
+        <button class="btn" id="startBtn">✨ New Game</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="overlay">
+    <div class="modal">
+      <div class="stars" id="modalStars">🌸✨🌸</div>
+      <h2 id="modalTitle">You did it!</h2>
+      <div class="score-label">Score</div>
+      <div class="score-big" id="finalScore">0</div>
+      <div class="stat-row">
+        <div>Time<b id="finalTime">0:00</b></div>
+        <div>Moves<b id="finalMoves">0</b></div>
+      </div>
+      <div id="nameSection">
+        <div class="score-label" style="margin-top:10px">Your name</div>
+        <input type="text" class="name-input" id="nameInput" placeholder="type your name ♡" maxlength="14" />
+      </div>
+      <div class="chart" id="chart"></div>
+      <div class="actions">
+        <button class="btn" id="playAgain">Play Again ♡</button>
+        <button class="btn ghost" id="closeModal">Close</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+  const members = [
+    { name: 'Yoonchae',  img: 'images/yoonchae.png',  bg: 'linear-gradient(135deg,#fff4ec,#ffd9c2)', ink: '#8a4a2c', tag: 'soft glow' },
+    { name: 'Sophia',    img: 'images/sophia.png',    bg: 'linear-gradient(135deg,#ffe2b8,#ffae6b)', ink: '#9a4a14', tag: 'sun-kissed' },
+    { name: 'Megan',     img: 'images/megan.png',     bg: 'linear-gradient(135deg,#ffd1d6,#e58a9c)', ink: '#7a2436', tag: 'burgundy bloom' },
+    { name: 'Lara',      img: 'images/lara.png',      bg: 'linear-gradient(135deg,#f0ffae,#c8ee5a)', ink: '#4f6a14', tag: 'electric lime' },
+    { name: 'Daniela',   img: 'images/daniela.png',   bg: 'linear-gradient(135deg,#ffc7ec,#ff5fb5)', ink: '#7a1d5c', tag: 'pink moon' },
+    { name: 'Manon',     img: 'images/manon.png',     bg: 'linear-gradient(135deg,#fff7c4,#ffe066)', ink: '#8a6a14', tag: 'butter ruffle' },
+    { name: 'Mia',       img: 'images/mia.png',       bg: 'linear-gradient(135deg,#e8d6ff,#b693ff)', ink: '#52268a', tag: 'lilac dream' },
+    { name: 'Gabriela',  img: 'images/gabriela.png',  bg: 'linear-gradient(135deg,#ffe1f0,#ffa6cf)', ink: '#9a2868', tag: 'rose petal' },
+    { name: 'KATSEYE',   img: 'images/katseye.png',   bg: 'linear-gradient(135deg,#ffb6d9,#c5a3ff,#a3d8ff)', ink: '#5b3a6b', tag: 'the group' },
+    { name: 'Group',     img: 'images/group-01.png',  bg: 'linear-gradient(135deg,#ffd6e8,#d3b8ff,#b8e2ff)', ink: '#5b3a6b', tag: 'eye-kons' },
+    { name: 'Debut',     img: 'images/debut.png',     bg: 'linear-gradient(135deg,#fff0f6,#ffd5ea)', ink: '#a8316f', tag: 'debut' },
+    { name: 'Touch',     img: 'images/touch.png',     bg: 'linear-gradient(135deg,#ffd6c7,#ff9a8a)', ink: '#9a3924', tag: 'touch' },
+    { name: 'Gnarly',    img: 'images/gnarly.png',    bg: 'linear-gradient(135deg,#d6ffe8,#5fe8a8)', ink: '#1d6b48', tag: 'gnarly' },
+    { name: 'Gameboy',   img: 'images/gameboy.png',   bg: 'linear-gradient(135deg,#c8f1ff,#7ad6ff)', ink: '#1c5a8c', tag: 'gameboy' },
+    { name: 'Internet',  img: 'images/internet.png',  bg: 'linear-gradient(135deg,#d4d8ff,#8a96ff)', ink: '#2a3680', tag: 'internet' },
+    { name: 'Monster',   img: 'images/monster.png',   bg: 'linear-gradient(135deg,#e0c2ff,#9d5fff)', ink: '#4a1c8a', tag: 'monster' },
+  ];
+
+  const board = document.getElementById('board');
+  const movesEl = document.getElementById('moves');
+  const matchesEl = document.getElementById('matches');
+  const timeEl = document.getElementById('time');
+  const bestEl = document.getElementById('best');
+  const overlay = document.getElementById('overlay');
+  const finalMoves = document.getElementById('finalMoves');
+  const finalTime = document.getElementById('finalTime');
+  const finalScore = document.getElementById('finalScore');
+  const modalTitle = document.getElementById('modalTitle');
+  const modalStars = document.getElementById('modalStars');
+  const chartEl = document.getElementById('chart');
+
+  const SCORE_KEY = 'katseye_scores_v1';
+  const SETTINGS_KEY = 'katseye_settings_v1';
+  const NAME_KEY = 'katseye_player_name';
+
+  // ============ 8-BIT AUDIO ENGINE (procedural, royalty-free) ============
+  const settings = Object.assign(
+    { bgOn: true, bgVol: 30, sfxOn: true, sfxVol: 60 },
+    JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}')
+  );
+  function saveSettings() { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); }
+
+  let audioCtx = null;
+  let bgGain = null;
+  let bgTimer = null;
+  let bgStep = 0;
+
+  function initAudio() {
+    if (audioCtx) return;
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    bgGain = audioCtx.createGain();
+    bgGain.gain.value = settings.bgVol / 100 * 0.15;
+    bgGain.connect(audioCtx.destination);
+  }
+
+  // 8-bit square wave note
+  function playNote(freq, duration, type = 'square', volume = 0.2, dest = null) {
+    if (!audioCtx) return;
+    const osc = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    osc.type = type;
+    osc.frequency.value = freq;
+    g.gain.setValueAtTime(0, audioCtx.currentTime);
+    g.gain.linearRampToValueAtTime(volume, audioCtx.currentTime + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+    osc.connect(g).connect(dest || audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + duration);
+  }
+
+  // Cute 8-bit chiptune loop (C major-ish, fluffy bouncy)
+  const NOTES = { C4:261.63, D4:293.66, E4:329.63, F4:349.23, G4:392, A4:440, B4:493.88,
+                  C5:523.25, D5:587.33, E5:659.25, F5:698.46, G5:783.99, A5:880 };
+  const MELODY = [
+    'E5','G5','A5','G5','E5','C5','D5','E5',
+    'G5','A5','C5','E5','D5','C5','D5','E5',
+    'A4','C5','E5','D5','C5','A4','G4','E4',
+    'C5','E5','G5','A5','G5','E5','D5','C5'
+  ];
+  const BASS = ['C4','C4','G4','G4','A4','A4','F4','F4',
+                'C4','C4','G4','G4','F4','F4','G4','G4'];
+
+  function bgTick() {
+    if (!settings.bgOn || !audioCtx) return;
+    const note = MELODY[bgStep % MELODY.length];
+    const bass = BASS[bgStep % BASS.length];
+    playNote(NOTES[note], 0.22, 'square', 0.18, bgGain);
+    if (bgStep % 2 === 0) playNote(NOTES[bass] / 2, 0.35, 'triangle', 0.25, bgGain);
+    bgStep++;
+  }
+
+  function startBgMusic() {
+    if (!settings.bgOn) return;
+    initAudio();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    if (bgTimer) clearInterval(bgTimer);
+    bgGain.gain.value = settings.bgVol / 100 * 0.15;
+    bgTimer = setInterval(bgTick, 220);
+  }
+  function stopBgMusic() {
+    if (bgTimer) { clearInterval(bgTimer); bgTimer = null; }
+  }
+
+  // SFX
+  function sfxMatch() {
+    if (!settings.sfxOn) return;
+    initAudio();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    const v = settings.sfxVol / 100 * 0.3;
+    const seq = ['C5','E5','G5','C5'];
+    seq.forEach((n, i) => {
+      setTimeout(() => playNote(NOTES[n] * 2, 0.12, 'square', v), i * 70);
+    });
+  }
+  function sfxFlip() {
+    if (!settings.sfxOn) return;
+    initAudio();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    playNote(660, 0.05, 'square', settings.sfxVol / 100 * 0.15);
+  }
+  function sfxWin() {
+    if (!settings.sfxOn) return;
+    initAudio();
+    const v = settings.sfxVol / 100 * 0.3;
+    const seq = ['C5','E5','G5','C5','E5','G5','C5'];
+    seq.forEach((n, i) => {
+      setTimeout(() => playNote(NOTES[n] * 2, 0.18, 'square', v), i * 110);
+    });
+  }
+  // ===================================================================
+
+  let flipped = [];
+  let lock = false;
+  let moves = 0;
+  let matched = 0;
+  let startTs = 0;
+  let elapsedMs = 0;
+  let timerId = null;
+  let timerStarted = false;
+
+  function fmtTime(ms) {
+    const total = Math.floor(ms / 1000);
+    const m = Math.floor(total / 60);
+    const s = total % 60;
+    return `${m}:${String(s).padStart(2, '0')}`;
+  }
+
+  function startTimer() {
+    if (timerStarted) return;
+    timerStarted = true;
+    startTs = Date.now();
+    timerId = setInterval(() => {
+      elapsedMs = Date.now() - startTs;
+      timeEl.textContent = fmtTime(elapsedMs);
+    }, 200);
+  }
+
+  function stopTimer() {
+    if (timerId) clearInterval(timerId);
+    timerId = null;
+    if (timerStarted) elapsedMs = Date.now() - startTs;
+  }
+
+  // Score: rewards low time + low moves. Min 6 moves perfect.
+  function calcScore(ms, mv) {
+    const seconds = ms / 1000;
+    const pairs = activeMembers.length;
+    const base = pairs * 1000;
+    const timePenalty = seconds * 15;
+    const movePenalty = Math.max(0, mv - pairs) * 30;
+    return Math.max(100, Math.round(base - timePenalty - movePenalty));
+  }
+
+  function loadScores() {
+    try { return JSON.parse(localStorage.getItem(SCORE_KEY)) || []; }
+    catch { return []; }
+  }
+  function saveScores(scores) {
+    localStorage.setItem(SCORE_KEY, JSON.stringify(scores));
+  }
+  function recordScore(entry) {
+    const scores = loadScores();
+    scores.push(entry);
+    scores.sort((a, b) => b.score - a.score);
+    const top = scores.slice(0, 5);
+    saveScores(top);
+    return top;
+  }
+  function updateBestPill() {
+    const scores = loadScores();
+    bestEl.textContent = scores.length ? scores[0].score : '—';
+  }
+
+  function renderChart(currentEntry) {
+    const scores = loadScores();
+    if (!scores.length) {
+      chartEl.innerHTML = '<h3>🏆 Top Scores</h3><div class="chart-empty">No scores yet — you\u2019re first! ♡</div>';
+      return;
+    }
+    const max = scores[0].score;
+    const rows = scores.map((s, i) => {
+      const isCurrent = currentEntry && s.t === currentEntry.t && s.score === currentEntry.score;
+      const pct = Math.max(8, (s.score / max) * 100);
+      const playerName = (s.name || 'anon').replace(/[<>&"]/g, '');
+      return `
+        <div class="chart-row ${isCurrent ? 'current' : ''}">
+          <div class="rank">${i + 1}</div>
+          <div class="bar-wrap">
+            <div class="bar" style="width:${pct}%"></div>
+            <div class="bar-label"><span class="player">${playerName}</span>${fmtTime(s.ms)} · ${s.moves}m</div>
+          </div>
+          <div class="score-val">${s.score}</div>
+        </div>
+      `;
+    }).join('');
+    chartEl.innerHTML = `<h3>🏆 Top Scores</h3>${rows}`;
+  }
+
+  function shuffle(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  function shuffle(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  let activeMembers = members;
+
+  function buildBoard() {
+    const slider = document.getElementById('cardCount');
+    const totalCards = parseInt(slider.value, 10);
+    const pairCount = Math.min(members.length, Math.max(3, totalCards / 2));
+    activeMembers = shuffle([...members]).slice(0, pairCount);
+
+    board.innerHTML = '';
+    flipped = [];
+    moves = 0;
+    matched = 0;
+    lock = false;
+    movesEl.textContent = '0';
+    matchesEl.textContent = `0/${activeMembers.length}`;
+    timeEl.textContent = '0:00';
+    elapsedMs = 0;
+    timerStarted = false;
+    stopTimer();
+    updateBestPill();
+    overlay.classList.remove('show');
+
+    const deck = shuffle([...activeMembers, ...activeMembers]);
+
+    deck.forEach((m) => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.dataset.name = m.name;
+      card.innerHTML = `
+        <div class="card-inner">
+          <div class="face face-back">♡</div>
+          <div class="face face-front" style="--member-bg:${m.bg};--member-ink:${m.ink}">
+            <img class="photo" src="${m.img}" alt="${m.name}"
+                 onerror="this.outerHTML='<div class=&quot;photo missing&quot;>add<br>${m.img.split('/').pop()}</div>'">
+            <div class="name">${m.name}</div>
+            <div class="tag">${m.tag}</div>
+          </div>
+        </div>
+      `;
+      card.addEventListener('click', () => onFlip(card));
+      board.appendChild(card);
+    });
+  }
+
+  function onFlip(card) {
+    if (lock) return;
+    if (card.classList.contains('flipped') || card.classList.contains('matched')) return;
+
+    startTimer();
+    sfxFlip();
+    card.classList.add('flipped');
+    flipped.push(card);
+
+    if (flipped.length === 2) {
+      moves++;
+      movesEl.textContent = moves;
+      const [a, b] = flipped;
+      if (a.dataset.name === b.dataset.name) {
+        a.classList.add('matched');
+        b.classList.add('matched');
+        flipped = [];
+        matched++;
+        matchesEl.textContent = `${matched}/${activeMembers.length}`;
+        matchEffect(a, b);
+        sfxMatch();
+        if (matched === activeMembers.length) {
+          setTimeout(showWin, 900);
+        }
+      } else {
+        lock = true;
+        setTimeout(() => {
+          a.classList.remove('flipped');
+          b.classList.remove('flipped');
+          flipped = [];
+          lock = false;
+        }, 850);
+      }
+    }
+  }
+
+  function matchEffect(a, b) {
+    // flash the matches pill
+    const pill = matchesEl.parentElement;
+    pill.classList.remove('flash');
+    void pill.offsetWidth;
+    pill.classList.add('flash');
+
+    // burst sparkles on each matched card
+    const emojis = ['✨','💗','🌸','♡','⭐','🦋'];
+    [a, b].forEach(card => {
+      const rect = card.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      for (let i = 0; i < 10; i++) {
+        const s = document.createElement('div');
+        s.className = 'burst';
+        s.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+        const angle = (Math.PI * 2 * i) / 10 + Math.random() * 0.4;
+        const dist = 60 + Math.random() * 40;
+        s.style.setProperty('--bx', `calc(-50% + ${Math.cos(angle) * dist}px)`);
+        s.style.setProperty('--by', `calc(-50% + ${Math.sin(angle) * dist}px)`);
+        s.style.left = cx + 'px';
+        s.style.top = cy + 'px';
+        s.style.position = 'fixed';
+        s.style.fontSize = (18 + Math.random() * 14) + 'px';
+        document.body.appendChild(s);
+        setTimeout(() => s.remove(), 1100);
+      }
+    });
+
+    // floating "+1 ♡" between the two cards
+    const ra = a.getBoundingClientRect();
+    const rb = b.getBoundingClientRect();
+    const px = (ra.left + rb.left) / 2 + ra.width / 2;
+    const py = (ra.top + rb.top) / 2 + ra.height / 2;
+    const plus = document.createElement('div');
+    plus.className = 'plus-one';
+    plus.textContent = '+1 ♡';
+    plus.style.left = px + 'px';
+    plus.style.top = py + 'px';
+    document.body.appendChild(plus);
+    setTimeout(() => plus.remove(), 1300);
+  }
+
+  let pendingEntry = null;
+
+  function showWin() {
+    stopTimer();
+    const score = calcScore(elapsedMs, moves);
+    pendingEntry = { score, ms: elapsedMs, moves, t: Date.now(), name: '' };
+
+    finalMoves.textContent = moves;
+    finalTime.textContent = fmtTime(elapsedMs);
+    finalScore.textContent = score;
+    modalTitle.textContent = 'You did it!';
+    modalStars.textContent = '🌸✨🌸';
+
+    // show name input, prefill last name
+    document.getElementById('nameSection').style.display = '';
+    const nameInput = document.getElementById('nameInput');
+    nameInput.value = localStorage.getItem(NAME_KEY) || '';
+    setTimeout(() => nameInput.focus(), 200);
+
+    renderChart(null);
+    overlay.classList.add('show');
+    confettiBurst();
+    sfxWin();
+  }
+
+  function commitPendingScore() {
+    if (!pendingEntry) return;
+    const nameInput = document.getElementById('nameInput');
+    const name = (nameInput.value.trim() || 'anon').slice(0, 14);
+    pendingEntry.name = name;
+    localStorage.setItem(NAME_KEY, name);
+    const top = recordScore(pendingEntry);
+    const rank = top.findIndex(s => s.t === pendingEntry.t) + 1;
+    if (rank === 1) {
+      modalTitle.textContent = 'New Best!';
+      modalStars.textContent = '👑✨🌸✨👑';
+    } else if (rank > 0) {
+      modalTitle.textContent = `Top ${rank}!`;
+      modalStars.textContent = '🌸✨🌸';
+    }
+    renderChart(pendingEntry);
+    updateBestPill();
+    pendingEntry = null;
+  }
+
+  function openScores() {
+    finalMoves.textContent = moves;
+    finalTime.textContent = fmtTime(elapsedMs);
+    finalScore.textContent = matched === activeMembers.length && !pendingEntry ? calcScore(elapsedMs, moves) : '—';
+    modalTitle.textContent = '🏆 Top Scores';
+    modalStars.textContent = '✨';
+    document.getElementById('nameSection').style.display = 'none';
+    renderChart(null);
+    overlay.classList.add('show');
+  }
+
+  function confettiBurst() {
+    const emojis = ['✨','🌸','💗','⭐','🦋','🍀','🌹','🌞','♡'];
+    for (let i = 0; i < 28; i++) {
+      const s = document.createElement('div');
+      s.className = 'sparkle';
+      s.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+      s.style.left = Math.random() * 100 + 'vw';
+      s.style.fontSize = (16 + Math.random() * 20) + 'px';
+      s.style.animationDuration = (5 + Math.random() * 6) + 's';
+      s.style.animationDelay = (Math.random() * 1.5) + 's';
+      document.body.appendChild(s);
+      setTimeout(() => s.remove(), 12000);
+    }
+  }
+
+  // ambient sparkles
+  function ambientSparkles() {
+    const emojis = ['✨','♡','✦','🌸'];
+    setInterval(() => {
+      const s = document.createElement('div');
+      s.className = 'sparkle';
+      s.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+      s.style.left = Math.random() * 100 + 'vw';
+      s.style.fontSize = (14 + Math.random() * 14) + 'px';
+      s.style.animationDuration = (8 + Math.random() * 6) + 's';
+      document.body.appendChild(s);
+      setTimeout(() => s.remove(), 15000);
+    }, 800);
+  }
+
+  const cardCount = document.getElementById('cardCount');
+  const cardCountLabel = document.getElementById('cardCountLabel');
+  const startOverlay = document.getElementById('startOverlay');
+  cardCount.addEventListener('input', () => {
+    cardCountLabel.textContent = cardCount.value;
+  });
+
+  function openStart() {
+    commitPendingScore();
+    overlay.classList.remove('show');
+    startOverlay.classList.add('show');
+  }
+  function startGame() {
+    commitPendingScore();
+    startOverlay.classList.remove('show');
+    buildBoard();
+    startBgMusic();
+  }
+
+  document.getElementById('startBtn').addEventListener('click', startGame);
+  document.getElementById('reset').addEventListener('click', openStart);
+  document.getElementById('playAgain').addEventListener('click', openStart);
+  document.getElementById('showScores').addEventListener('click', openScores);
+  document.getElementById('closeModal').addEventListener('click', () => {
+    commitPendingScore();
+    overlay.classList.remove('show');
+  });
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) {
+      commitPendingScore();
+      overlay.classList.remove('show');
+    }
+  });
+
+  updateBestPill();
+  ambientSparkles();
+
+  // ============ Settings panel wiring ============
+  const settingsOverlay = document.getElementById('settingsOverlay');
+  const bgToggle = document.getElementById('bgToggle');
+  const sfxToggle = document.getElementById('sfxToggle');
+  const bgVolEl = document.getElementById('bgVol');
+  const sfxVolEl = document.getElementById('sfxVol');
+
+  function syncSettingsUI() {
+    bgToggle.classList.toggle('on', settings.bgOn);
+    sfxToggle.classList.toggle('on', settings.sfxOn);
+    bgVolEl.value = settings.bgVol;
+    sfxVolEl.value = settings.sfxVol;
+    bgVolEl.disabled = !settings.bgOn;
+    sfxVolEl.disabled = !settings.sfxOn;
+  }
+  syncSettingsUI();
+
+  document.getElementById('settingsBtn').addEventListener('click', () => {
+    syncSettingsUI();
+    settingsOverlay.classList.add('show');
+  });
+  document.getElementById('closeSettings').addEventListener('click', () => {
+    settingsOverlay.classList.remove('show');
+  });
+  settingsOverlay.addEventListener('click', (e) => {
+    if (e.target === settingsOverlay) settingsOverlay.classList.remove('show');
+  });
+
+  bgToggle.addEventListener('click', () => {
+    settings.bgOn = !settings.bgOn;
+    saveSettings();
+    syncSettingsUI();
+    if (settings.bgOn) startBgMusic(); else stopBgMusic();
+  });
+  sfxToggle.addEventListener('click', () => {
+    settings.sfxOn = !settings.sfxOn;
+    saveSettings();
+    syncSettingsUI();
+    if (settings.sfxOn) sfxFlip();
+  });
+  bgVolEl.addEventListener('input', () => {
+    settings.bgVol = parseInt(bgVolEl.value, 10);
+    saveSettings();
+    if (bgGain) bgGain.gain.value = settings.bgVol / 100 * 0.15;
+  });
+  sfxVolEl.addEventListener('input', () => {
+    settings.sfxVol = parseInt(sfxVolEl.value, 10);
+    saveSettings();
+  });
+  sfxVolEl.addEventListener('change', () => sfxMatch());
+</script>
+</body>
+</html>
